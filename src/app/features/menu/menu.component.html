@@ -1,0 +1,76 @@
+<div class="menu-page">
+  <div class="container">
+    <h1>Nuestro Menú</h1>
+    <div class="categories">
+      @for (category of categories; track category.value) {
+        <button class="category-btn" [class.active]="selectedCategory() === category.value" (click)="selectCategory(category.value)">{{ category.label }}</button>
+      }
+    </div>
+    <div class="search-bar">
+      <input 
+        type="text" 
+        placeholder="Buscar en todo el menú..." 
+        [ngModel]="searchInput()" 
+        (ngModelChange)="searchInput.set($event)"
+        aria-label="Buscar productos"
+      >
+      @if (searchInput()) {
+        <button class="clear-btn" (click)="searchInput.set('')" aria-label="Limpiar búsqueda" title="Limpiar">✕</button>
+      }
+      <button class="search-btn" aria-label="Buscar"><span>🔍</span></button>
+    </div>
+    @if (menuService.isLoading()) {
+      <div class="loading">Cargando menú...</div>
+    } @else {
+      @if (!selectedCategory() && !searchInput().trim()) {
+        <div class="no-category-selected">
+          <div class="icon">🍽️</div>
+          <h2>Selecciona una categoría o busca un producto</h2>
+          <p>Elige una categoría arriba o utiliza el buscador para encontrar lo que deseas</p>
+        </div>
+      } @else {
+        <div class="menu-grid">
+          @for (item of filteredItems(); track item.id) {
+            <div class="menu-card">
+              <div class="menu-card__image">
+                <img [src]="item.image" [alt]="item.name" />
+                @if (!item.available) { <div class="unavailable-badge">No disponible</div> }
+              </div>
+              <div class="menu-card__content">
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.description }}</p>
+                <div class="menu-card__footer">
+                  <span class="price">{{ item.price.toFixed(2) }}€</span>
+                  <button class="btn-add" [disabled]="!item.available" (click)="addToCart(item)">Añadir al Carrito</button>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="no-results"><p>No se encontraron resultados</p></div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Modal de notificación -->
+<app-notification-modal 
+  [isOpen]="showNotification()" 
+  [title]="'¡Producto añadido!'" 
+  [message]="notificationMessage()" 
+  [type]="'success'" 
+  [autoClose]="true" 
+  [autoCloseDelay]="2500" 
+  (close)="closeNotification()"
+></app-notification-modal>
+
+<!-- Modal de personalización -->
+@if (showCustomizationModal() && selectedProduct()) {
+  <app-product-customization-modal
+    [show]="showCustomizationModal()"
+    [product]="selectedProduct()!"
+    (confirm)="onConfirmCustomization($event)"
+    (cancel)="onCancelCustomization()"
+  ></app-product-customization-modal>
+}
