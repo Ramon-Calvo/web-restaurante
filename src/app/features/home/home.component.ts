@@ -369,13 +369,19 @@ export class HomeComponent {
   selectedProduct = signal<MenuItem | null>(null);
 
   addProductToCart(productId: string): void {
+    console.log('🔍 HomeComponent: Buscando producto con ID:', productId);
     const product = this.menuService.getItemById(productId);
+    console.log('📦 HomeComponent: Producto encontrado:', product);
+    console.log('⚙️ HomeComponent: Tiene customizaciones?', product?.customizations?.length);
+    
     if (product) {
       // Si el producto tiene personalizaciones, mostrar el modal
       if (product.customizations && product.customizations.length > 0) {
+        console.log('✅ HomeComponent: Mostrando modal de personalización');
         this.selectedProduct.set(product);
         this.showCustomizationModal.set(true);
       } else {
+        console.log('⚡ HomeComponent: Añadiendo directamente al carrito');
         // Si no tiene personalizaciones, añadir directamente al carrito
         try {
           this.cartService.addItem(product, 1, []);
